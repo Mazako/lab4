@@ -22,6 +22,10 @@ public class Edge {
         return node.equals(firstNode) ? secondNode : firstNode;
     }
 
+    public boolean areEdgesUnique(Edge edge) {
+
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

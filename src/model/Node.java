@@ -6,23 +6,29 @@ import java.util.Objects;
 public class Node {
     private String name;
     private Color color;
-    private double x;
-    private double y;
+    private int x;
+    private int y;
 
+    private int r;
     public Node(String name, Color color) {
         this.name = name;
         this.color = color;
     }
 
-    public Node(String name, Color color, double x, double y) {
+    public Node(String name, Color color, int x, int y, int r) {
         this.name = name;
         this.color = color;
         this.x = x;
         this.y = y;
+        this.r = r;
     }
 
     public Node() {
         this("", Color.BLACK);
+    }
+
+    public void paint(Graphics2D g2d) {
+        g2d.fillOval(x - r, y + r, 2 * r, 2 * r);
     }
 
     public String getName() {
@@ -41,19 +47,19 @@ public class Node {
         this.color = color;
     }
 
-    public double getX() {
+    public int getX() {
         return x;
     }
 
-    public void setX(double x) {
+    public void setX(int x) {
         this.x = x;
     }
 
-    public double getY() {
+    public int getY() {
         return y;
     }
 
-    public void setY(double y) {
+    public void setY(int y) {
         this.y = y;
     }
 
