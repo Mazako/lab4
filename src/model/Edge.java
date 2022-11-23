@@ -6,24 +6,20 @@ import java.util.Objects;
 public class Edge {
     private Node firstNode;
     private Node secondNode;
-    private Color color;
+    private MeansOfTransport transport;
 
-    public Edge(Node firstNode, Node secondNode, Color color) {
+    public Edge(Node firstNode, Node secondNode, MeansOfTransport transport) {
         this.firstNode = firstNode;
         this.secondNode = secondNode;
-        this.color = color;
+        this.transport = transport;
     }
 
     public Edge(Node firstNode, Node secondNode) {
-        this(firstNode, secondNode, Color.BLACK);
+        this(firstNode, secondNode, MeansOfTransport.CAR);
     }
 
     public Node getNotCalledNode(Node node) {
         return node.equals(firstNode) ? secondNode : firstNode;
-    }
-
-    public boolean areEdgesUnique(Edge edge) {
-
     }
 
     @Override
@@ -31,11 +27,11 @@ public class Edge {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Edge edge = (Edge) o;
-        return Objects.equals(firstNode, edge.firstNode) && Objects.equals(secondNode, edge.secondNode) && Objects.equals(color, edge.color);
+        return (Objects.equals(firstNode, edge.firstNode) && Objects.equals(secondNode, edge.secondNode)) || (Objects.equals(firstNode, edge.secondNode) && Objects.equals(secondNode, edge.secondNode)) && Objects.equals(transport, edge.transport);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(firstNode, secondNode, color);
+        return Objects.hash(firstNode, secondNode, transport);
     }
 }

@@ -2,6 +2,7 @@ package model;
 
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 public class Graph {
@@ -32,5 +33,12 @@ public class Graph {
         Edge edge = new Edge(firstNode, secondNode);
         graph.get(firstNode).add(edge);
         graph.get(secondNode).add(edge);
+    }
+
+    public Set<Edge> getAllDistinctEdges() {
+        return graph.values()
+                .stream()
+                .flatMap(set -> set.stream().distinct())
+                .collect(Collectors.toSet());
     }
 }
