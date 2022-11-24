@@ -1,5 +1,6 @@
 package model;
 
+import java.awt.*;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
@@ -40,5 +41,19 @@ public class Graph {
                 .stream()
                 .flatMap(set -> set.stream().distinct())
                 .collect(Collectors.toSet());
+    }
+
+    public void drawGraph(Graphics2D g2d) {
+        Set<Node> nodes = graph.keySet();
+        for (Edge edge : getAllDistinctEdges()) {
+            edge.draw(g2d);
+        }
+        for (Node node : nodes) {
+            node.paint(g2d);
+        }
+    }
+
+    public Set<Node> getAllNodes() {
+        return graph.keySet();
     }
 }

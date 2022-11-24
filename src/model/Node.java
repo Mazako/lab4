@@ -4,33 +4,42 @@ import java.awt.*;
 import java.util.Objects;
 
 public class Node {
+
+    public static final int MIN_RADIUS = 35;
+    public static final int MAX_RADIUS = 100;
     private String name;
     private Color color;
     private int x;
     private int y;
 
     private int r;
-    public Node(String name, Color color) {
-        this.name = name;
-        this.color = color;
-    }
 
     public Node(String name, Color color, int x, int y, int r) {
         this.name = name;
         this.color = color;
         this.x = x;
         this.y = y;
-        this.r = r;
+        this.r =  Math.max(MIN_RADIUS, r);
+        this.r = Math.min(MAX_RADIUS, this.r);
     }
 
-    public Node() {
-        this("", Color.BLACK);
-    }
 
     public void paint(Graphics2D g2d) {
-        g2d.fillOval(x - r, y + r, 2 * r, 2 * r);
+        g2d.setColor(color);
+        g2d.fillOval(x - r, y - r, 2 * r, 2 * r);
+        g2d.setColor(Color.BLACK);
+        g2d.drawOval(x - r, y - r, 2 * r, 2 * r);
+        g2d.drawString(name, x - (name.length()*4), y);
     }
 
+    public boolean isMouseOver(int mx, int my){
+        return (x-mx)*(x-mx)+(y-my)*(y-my)<=r*r;
+    }
+
+    public void move(int x, int y) {
+        this.x += x;
+        this.y += y;
+    }
     public String getName() {
         return name;
     }
@@ -63,6 +72,15 @@ public class Node {
         this.y = y;
     }
 
+    public int getR() {
+        return r;
+    }
+
+    public void setR(int r) {
+        this.r = Math.max(MIN_RADIUS, r);
+        this.r = Math.min(MAX_RADIUS, this.r);
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -74,5 +92,9 @@ public class Node {
     @Override
     public int hashCode() {
         return Objects.hash(name, color, x, y);
+    }
+
+    public void increaseSize(int dr) {
+        this.setR(this.getR() + dr);
     }
 }

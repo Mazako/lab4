@@ -1,5 +1,6 @@
 package model;
 
+import javax.swing.plaf.synth.SynthRootPaneUI;
 import java.awt.*;
 import java.util.Objects;
 
@@ -20,6 +21,23 @@ public class Edge {
 
     public Node getNotCalledNode(Node node) {
         return node.equals(firstNode) ? secondNode : firstNode;
+    }
+
+    public void draw(Graphics2D g2d) {
+        g2d.setColor(transport.getColor());
+        g2d.setStroke(new BasicStroke(3));
+        g2d.drawLine(firstNode.getX(), firstNode.getY(), secondNode.getX(), secondNode.getY());
+    }
+
+    public boolean isMouseOver(int x, int y) {
+        int x1 = firstNode.getX();
+        int y1 = firstNode.getY();
+        int y2 = secondNode.getY();
+        int x2 = secondNode.getX();
+        double a = (double)(y1 - y2) / (x1-x2);
+        double b = (double)((x1*y2) - (x2*y1))/(x1-x2);
+        double mouseY = (a * x + b);
+        return Math.abs(mouseY - y) <= 10;
     }
 
     @Override
