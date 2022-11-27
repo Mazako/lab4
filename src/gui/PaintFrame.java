@@ -2,12 +2,13 @@ package gui;
 
 import model.Edge;
 import model.Graph;
+import model.MeansOfTransport;
 import model.Node;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
-import java.util.Set;
+import java.util.List;
 
 public class PaintFrame extends JPanel implements MouseMotionListener, MouseListener, KeyListener, MouseWheelListener {
     protected Graph graph = new Graph();
@@ -15,6 +16,10 @@ public class PaintFrame extends JPanel implements MouseMotionListener, MouseList
     private int mouseY = 0;
     private boolean mouseButtonLeft = false;
     private boolean mouseButtonRight = false;
+
+    private boolean insertingEdge = false;
+
+    private Node insertingNode = null;
     private Node nodeUnderCursor = null;
     private Edge edgeUnderCursor = null;
 
@@ -34,10 +39,13 @@ public class PaintFrame extends JPanel implements MouseMotionListener, MouseList
         if (graph != null) {
             graph.drawGraph(g2d);
         }
+        if (insertingEdge) {
+            g.drawLine(insertingNode.getX(), insertingNode.getY(), mouseX, mouseY);
+        }
     }
 
     private Node findNode(int mx, int my) {
-        Set<Node> allNodes = graph.getAllNodes();
+        List<Node> allNodes = graph.getAllNodes();
         return allNodes.stream()
                 .filter(node -> node.isMouseOver(mx, my))
                 .findFirst()
@@ -79,6 +87,11 @@ public class PaintFrame extends JPanel implements MouseMotionListener, MouseList
     public void mousePressed(MouseEvent e) {
         if (e.getButton() == 1)  {
             mouseButtonLeft = true;
+            if (insertingEdge && nodeUnderCursor != null) {
+                graph.addEdge(nodeUnderCursor, insertingNode);
+                insertingEdge = false;
+                insertingNode = null;
+            }
         }
         if (e.getButton() == 3) {
             mouseButtonRight = true;
@@ -92,7 +105,45 @@ public class PaintFrame extends JPanel implements MouseMotionListener, MouseList
         }
         if (e.getButton() == 3) {
             mouseButtonRight = false;
+            if (edgeUnderCursor == null && nodeUnderCursor == null) {
+                createPopupMenu(e);
+            } else if (nodeUnderCursor != null) {
+                createPopupMenu(e, nodeUnderCursor);
+            }
+            else if (edgeUnderCursor != null) {
+                createPopupMenu(e, edgeUnderCursor);
+            }
         }
+    }
+
+    private void createPopupMenu(MouseEvent e, Edge edgeUnderCursor) {
+            Edge currentEdge = edgeUnderCursor;
+            JPopupMenu popupMenu = new JPopupMenu();
+            JMenuItem changeToCar = new JMenuItem("Transport samochodem");
+            JMenuItem changeToTrain = new JMenuItem("Transport pociągiem");
+            JMenuItem changeToPlane = new JMenuItem("Transport samolotem");
+            JMenuItem changeToShip = new JMenuItem("Transport statkiem");
+            changeToCar.addActionListener(action -> {
+                currentEdge.setTransport(MeansOfTransport.CAR);
+                repaint();
+            });
+            changeToTrain.addActionListener(action -> {
+                currentEdge.setTransport(MeansOfTransport.TRAIN);
+                repaint();
+            });
+            changeToPlane.addActionListener(action -> {
+                currentEdge.setTransport(MeansOfTransport.PLANE);
+                repaint();
+            });
+            changeToShip.addActionListener(action -> {
+                currentEdge.setTransport(MeansOfTransport.SHIP);
+                repaint();
+            });
+            popupMenu.add(changeToCar);
+            popupMenu.add(changeToTrain);
+            popupMenu.add(changeToPlane);
+            popupMenu.add(changeToShip);
+            popupMenu.show(this, e.getX(), e.getY());
     }
 
     @Override
@@ -110,10 +161,16 @@ public class PaintFrame extends JPanel implements MouseMotionListener, MouseList
         if (mouseButtonLeft) {
             if (nodeUnderCursor != null) {
                 nodeUnderCursor.move(e.getX() - mouseX, e.getY() - mouseY);
-
             }
-            if (edgeUnderCursor != null) {
-                System.out.println("masz mnie kurwa");
+            else if (edgeUnderCursor != null) {
+                Node firstNode = edgeUnderCursor.getFirstNode();
+                Node secondNode = edgeUnderCursor.getSecondNode();
+                firstNode.move(e.getX() - mouseX, e.getY() - mouseY);
+                secondNode.move(e.getX() - mouseX, e.getY() - mouseY);
+            } else {
+                this.setCursor(Cursor.getPredefinedCursor(Cursor.MOVE_CURSOR));
+                graph.getAllNodes().stream()
+                        .forEach(node -> node.move(e.getX() - mouseX, e.getY() - mouseY));
             }
         }
         mouseX = e.getX();
@@ -126,13 +183,20 @@ public class PaintFrame extends JPanel implements MouseMotionListener, MouseList
         mouseX = e.getX();
         mouseY = e.getY();
         nodeUnderCursor = findNode(mouseX, mouseY);
-        edgeUnderCursor = findCoursor(mouseX, mouseY);
-        System.out.println(edgeUnderCursor);
+        edgeUnderCursor = findEdgeOnCoursor(mouseX, mouseY);
+        if (nodeUnderCursor != null) {
+            this.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        } else if (edgeUnderCursor != null) {
+            this.setCursor(Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR));
+        } else {
+            this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+        }
+        repaint();
     }
 
-    private Edge findCoursor(int mouseX, int mouseY) {
-        return graph.getAllDistinctEdges().stream()
-                .filter(edge -> edge.isMouseOver(mouseX, mouseY))
+    private Edge findEdgeOnCoursor(int mouseX, int mouseY) {
+        return graph.getAllEdges().stream()
+                .filter(edge -> edge.isMouseOver(mouseX, mouseY) && nodeUnderCursor == null)
                 .findFirst()
                 .orElse(null);
     }
@@ -140,12 +204,67 @@ public class PaintFrame extends JPanel implements MouseMotionListener, MouseList
     @Override
     public void mouseWheelMoved(MouseWheelEvent e) {
         if (mouseButtonLeft && nodeUnderCursor != null) {
-            if (e.getWheelRotation() == 1) {
+            if (e.getWheelRotation() == -1) {
                 nodeUnderCursor.increaseSize(5);
             } else {
                 nodeUnderCursor.increaseSize(-5);
             }
         }
+        if (mouseButtonLeft && edgeUnderCursor != null) {
+            if (e.getWheelRotation() == -1) {
+                edgeUnderCursor.changeLength(-10);
+            } else {
+                edgeUnderCursor.changeLength(10);
+            }
+        }
         repaint();
+    }
+
+    private void createPopupMenu(MouseEvent e) {
+        JPopupMenu popupMenu = new JPopupMenu();
+        JMenuItem jMenuItem = new JMenuItem("Dodaj nowy wierzchołek");
+        jMenuItem.addActionListener(action -> {
+            Node addedNode = graph.add(new Node(Color.LIGHT_GRAY, e.getX(), e.getY()));
+            setNameOfNode(addedNode);
+            repaint();
+        });
+        popupMenu.add(jMenuItem);
+        popupMenu.show(this, e.getX(), e.getY());
+
+    }
+
+    private void createPopupMenu(MouseEvent e, Node node) {
+        Node currentNode = nodeUnderCursor;
+        JPopupMenu popupMenu = new JPopupMenu();
+        JMenuItem removeNodeMenuItem = new JMenuItem("Usuń wierzchołek");
+        JMenuItem addEdgeMenuItem = new JMenuItem("Dodaj krawędź");
+        JMenuItem changeNameMenuItem = new JMenuItem("Zmień nazwę");
+        removeNodeMenuItem.addActionListener(action -> {
+            graph.remove(node);
+            repaint();
+        });
+        addEdgeMenuItem.addActionListener(action -> {
+            insertingNode = currentNode;
+            insertingEdge = true;
+        });
+        changeNameMenuItem.addActionListener(action -> {
+            setNameOfNode(currentNode);
+            repaint();
+        });
+        popupMenu.add(removeNodeMenuItem);
+        popupMenu.add(addEdgeMenuItem);
+        popupMenu.add(changeNameMenuItem);
+        popupMenu.show(this, e.getX(), e.getY());
+    }
+
+    private void setNameOfNode(Node currentNode) {
+        String name = JOptionPane.showInputDialog(this,
+                "Wpisz nazwę miasta",
+                "Wpisywanie nazwy miasta",
+                JOptionPane.INFORMATION_MESSAGE
+        );
+        if (name != null) {
+            currentNode.setName(name);
+        }
     }
 }

@@ -23,6 +23,10 @@ public class Node {
         this.r = Math.min(MAX_RADIUS, this.r);
     }
 
+    public Node (Color color, int x, int y) {
+        this("", color, x, y, MIN_RADIUS);
+    }
+
 
     public void paint(Graphics2D g2d) {
         g2d.setColor(color);
@@ -37,8 +41,8 @@ public class Node {
     }
 
     public void move(int x, int y) {
-        this.x += x;
-        this.y += y;
+        setX(getX() + x);
+        setY(getY() + y);
     }
     public String getName() {
         return name;
@@ -85,13 +89,24 @@ public class Node {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
+
         Node node = (Node) o;
-        return Double.compare(node.x, x) == 0 && Double.compare(node.y, y) == 0 && Objects.equals(name, node.name) && Objects.equals(color, node.color);
+
+        if (getX() != node.getX()) return false;
+        if (getY() != node.getY()) return false;
+        if (getR() != node.getR()) return false;
+        if (!getName().equals(node.getName())) return false;
+        return getColor().equals(node.getColor());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(name, color, x, y);
+        int result = getName().hashCode();
+        result = 31 * result + getColor().hashCode();
+        result = 31 * result + getX();
+        result = 31 * result + getY();
+        result = 31 * result + getR();
+        return result;
     }
 
     public void increaseSize(int dr) {

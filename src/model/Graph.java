@@ -1,59 +1,56 @@
 package model;
 
 import java.awt.*;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
+import java.util.List;
 import java.util.stream.Collectors;
 
 public class Graph {
-    private final HashMap<Node, HashSet<Edge>> graph = new HashMap<>();
+    private final List<Node> nodes = new ArrayList<>();
+    private final HashSet<Edge> edges = new HashSet<>();
 
-    public void add(Node node) {
-        graph.put(node, new HashSet<>());
+    public Node add(Node node) {
+        nodes.add(node);
+        return node;
+    }
+    public void remove(Node node) {
+        nodes.remove(node);
+        edges.removeIf(next -> next.getFirstNode().equals(node) || next.getSecondNode().equals(node));
     }
 
-    public HashSet<Node> getAllNodesConnectedTo(Node node) {
+    public List<Node> getAllNodesConnectedTo(Node node) {
         if (!nodeExists(node)) {
             throw new GraphException("Węzeł nie znajduje się w grafie");
         }
-        return graph.get(node)
-                .stream()
+        return edges.stream()
                 .map(edge -> edge.getNotCalledNode(node))
-                .collect(Collectors.toCollection(HashSet::new));
+                .collect(Collectors.toList());
+
     }
 
     public boolean nodeExists(Node node) {
-        return graph.containsKey(node);
+        return nodes.contains(node);
     }
 
     public void addEdge(Node firstNode, Node secondNode) {
         if (!nodeExists(firstNode) || !nodeExists(secondNode)) {
             throw new GraphException("Dane węzły nie znajdują się w grafie");
         }
-        Edge edge = new Edge(firstNode, secondNode);
-        graph.get(firstNode).add(edge);
-        graph.get(secondNode).add(edge);
+        edges.add(new Edge(firstNode, secondNode));
     }
 
-    public Set<Edge> getAllDistinctEdges() {
-        return graph.values()
-                .stream()
-                .flatMap(set -> set.stream().distinct())
-                .collect(Collectors.toSet());
+    public Set<Edge> getAllEdges() {
+        return edges;
     }
 
     public void drawGraph(Graphics2D g2d) {
-        Set<Node> nodes = graph.keySet();
-        for (Edge edge : getAllDistinctEdges()) {
-            edge.draw(g2d);
-        }
-        for (Node node : nodes) {
-            node.paint(g2d);
-        }
+        edges.stream()
+                .forEach(edge -> edge.draw(g2d));
+        nodes.stream()
+                .forEach(node -> node.paint(g2d));
     }
 
-    public Set<Node> getAllNodes() {
-        return graph.keySet();
+    public List<Node> getAllNodes() {
+        return nodes;
     }
 }
