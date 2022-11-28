@@ -2,9 +2,12 @@ package model;
 
 import javax.swing.plaf.synth.SynthRootPaneUI;
 import java.awt.*;
+import java.io.Serializable;
 import java.util.Objects;
 
-public class Edge {
+public class Edge implements Serializable {
+
+    private static final long serialVersionUID = 1L;
     private Node firstNode;
     private Node secondNode;
     private MeansOfTransport transport;
@@ -20,7 +23,17 @@ public class Edge {
     }
 
     public Node getNotCalledNode(Node node) {
-        return node.equals(firstNode) ? secondNode : firstNode;
+        if (node.equals(firstNode)) {
+            return secondNode;
+        } else if (node.equals(secondNode)) {
+            return firstNode;
+        } else {
+            return null;
+        }
+    }
+
+    public boolean edgeContainsNode(Node node) {
+        return node.equals(firstNode) || node.equals(secondNode);
     }
 
     public void draw(Graphics2D g2d) {

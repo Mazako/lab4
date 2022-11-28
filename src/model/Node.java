@@ -1,40 +1,53 @@
 package model;
 
 import java.awt.*;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
+import java.io.Serializable;
 import java.util.Objects;
 
-public class Node {
+public class Node implements Serializable {
 
+    private static final long serialVersionUID = 1L;
     public static final int MIN_RADIUS = 35;
     public static final int MAX_RADIUS = 100;
     private String name;
-    private Color color;
+    private Country country;
     private int x;
     private int y;
-
     private int r;
 
-    public Node(String name, Color color, int x, int y, int r) {
+    private PropertyChangeSupport support = new PropertyChangeSupport(this);
+
+    public Node(String name, Country country, int x, int y, int r) {
         this.name = name;
-        this.color = color;
+        this.country = country;
         this.x = x;
         this.y = y;
         this.r =  Math.max(MIN_RADIUS, r);
         this.r = Math.min(MAX_RADIUS, this.r);
     }
 
-    public Node (Color color, int x, int y) {
-        this("", color, x, y, MIN_RADIUS);
+    public Node (int x, int y) {
+        this("", new Country(), x, y, MIN_RADIUS);
     }
 
 
     public void paint(Graphics2D g2d) {
-        g2d.setColor(color);
+        g2d.setColor(country.getColor());
         g2d.fillOval(x - r, y - r, 2 * r, 2 * r);
         g2d.setColor(Color.BLACK);
         g2d.drawOval(x - r, y - r, 2 * r, 2 * r);
         g2d.drawString(name, x - (name.length()*4), y);
     }
+
+    public void addPropertyChangeListener(PropertyChangeListener pcl) {
+        support.addPropertyChangeListener(pcl);
+    }
+    public void removePropertyChangeListener(PropertyChangeListener pcl) {
+        support.removePropertyChangeListener(pcl);
+    }
+
 
     public boolean isMouseOver(int mx, int my){
         return (x-mx)*(x-mx)+(y-my)*(y-my)<=r*r;
@@ -49,15 +62,9 @@ public class Node {
     }
 
     public void setName(String name) {
+        String oldName = this.name;
         this.name = name;
-    }
-
-    public Color getColor() {
-        return color;
-    }
-
-    public void setColor(Color color) {
-        this.color = color;
+        support.firePropertyChange("changedName",oldName, name);
     }
 
     public int getX() {
@@ -85,6 +92,16 @@ public class Node {
         this.r = Math.min(MAX_RADIUS, this.r);
     }
 
+    public Country getCountry() {
+        return country;
+    }
+
+    public void setCountry(Country country) {
+        Country prevCountry = this.country;
+        this.country = country;
+        support.firePropertyChange("changeCountry", prevCountry, country);
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -96,13 +113,13 @@ public class Node {
         if (getY() != node.getY()) return false;
         if (getR() != node.getR()) return false;
         if (!getName().equals(node.getName())) return false;
-        return getColor().equals(node.getColor());
+        return getCountry().equals(node.getCountry());
     }
 
     @Override
     public int hashCode() {
         int result = getName().hashCode();
-        result = 31 * result + getColor().hashCode();
+        result = 31 * result + getCountry().hashCode();
         result = 31 * result + getX();
         result = 31 * result + getY();
         result = 31 * result + getR();
@@ -111,5 +128,10 @@ public class Node {
 
     public void increaseSize(int dr) {
         this.setR(this.getR() + dr);
+    }
+
+    @Override
+    public String toString() {
+        return name;
     }
 }

@@ -1,17 +1,19 @@
 package gui;
 
-import model.Edge;
-import model.Graph;
-import model.MeansOfTransport;
-import model.Node;
+import model.*;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 
-public class PaintFrame extends JPanel implements MouseMotionListener, MouseListener, KeyListener, MouseWheelListener {
-    protected Graph graph = new Graph();
+public class PaintFrame extends JPanel implements MouseMotionListener, MouseListener, KeyListener, MouseWheelListener, PropertyChangeListener {
+    private Graph graph;
     private int mouseX = 0;
     private int mouseY = 0;
     private boolean mouseButtonLeft = false;
@@ -23,12 +25,15 @@ public class PaintFrame extends JPanel implements MouseMotionListener, MouseList
     private Node nodeUnderCursor = null;
     private Edge edgeUnderCursor = null;
 
-    public PaintFrame() {
-        createInitData();
+    private ArrayList<Country> countries;
+
+    public PaintFrame(Graph graph, ArrayList<Country> countrySet) {
+        this.graph = graph;
         this.addMouseListener(this);
         this.addMouseMotionListener(this);
         this.addKeyListener(this);
         this.addMouseWheelListener(this);
+        this.countries = countrySet;
     }
 
 
@@ -50,17 +55,6 @@ public class PaintFrame extends JPanel implements MouseMotionListener, MouseList
                 .filter(node -> node.isMouseOver(mx, my))
                 .findFirst()
                 .orElse(null);
-    }
-    private void createInitData() {
-        Node node1 = new Node("Warszawa", Color.LIGHT_GRAY, 100, 100, 30);
-        Node node2 = new Node("Wrocław", Color.LIGHT_GRAY, 200, 100, 30);
-        Node node3 = new Node("Berlin", Color.LIGHT_GRAY, 400, 500, 30);
-        graph.add(node1);
-        graph.add(node2);
-        graph.add(node3);
-        graph.addEdge(node1, node2);
-        graph.addEdge(node1, node3);
-        graph.addEdge(node2, node3);
     }
 
     @Override
@@ -224,8 +218,9 @@ public class PaintFrame extends JPanel implements MouseMotionListener, MouseList
         JPopupMenu popupMenu = new JPopupMenu();
         JMenuItem jMenuItem = new JMenuItem("Dodaj nowy wierzchołek");
         jMenuItem.addActionListener(action -> {
-            Node addedNode = graph.add(new Node(Color.LIGHT_GRAY, e.getX(), e.getY()));
+            Node addedNode = new Node(e.getX(), e.getY());
             setNameOfNode(addedNode);
+            graph.add(addedNode);
             repaint();
         });
         popupMenu.add(jMenuItem);
@@ -239,6 +234,7 @@ public class PaintFrame extends JPanel implements MouseMotionListener, MouseList
         JMenuItem removeNodeMenuItem = new JMenuItem("Usuń wierzchołek");
         JMenuItem addEdgeMenuItem = new JMenuItem("Dodaj krawędź");
         JMenuItem changeNameMenuItem = new JMenuItem("Zmień nazwę");
+        JMenuItem changeCountryMenuItem = new JMenuItem("Zmień kraj");
         removeNodeMenuItem.addActionListener(action -> {
             graph.remove(node);
             repaint();
@@ -251,9 +247,26 @@ public class PaintFrame extends JPanel implements MouseMotionListener, MouseList
             setNameOfNode(currentNode);
             repaint();
         });
+        changeCountryMenuItem.addActionListener(action -> {
+            Object[] countriesObj = countries.toArray();
+            Country country =(Country) JOptionPane.showInputDialog(
+                    this,
+                    "Wybierz kraj",
+                    "Wybieranie kraju",
+                    JOptionPane.INFORMATION_MESSAGE,
+                    null,
+                    countriesObj,
+                    countriesObj[0]
+            );
+            if (country != null) {
+                currentNode.setCountry(country);
+                repaint();
+            }
+        });
         popupMenu.add(removeNodeMenuItem);
         popupMenu.add(addEdgeMenuItem);
         popupMenu.add(changeNameMenuItem);
+        popupMenu.add(changeCountryMenuItem);
         popupMenu.show(this, e.getX(), e.getY());
     }
 
@@ -265,6 +278,26 @@ public class PaintFrame extends JPanel implements MouseMotionListener, MouseList
         );
         if (name != null) {
             currentNode.setName(name);
+        }
+    }
+
+    public Graph getGraph() {
+        return graph;
+    }
+
+    public void setGraph(Graph graph) {
+        this.graph = graph;
+        repaint();
+    }
+
+    public void setCountries(ArrayList<Country> countries) {
+        this.countries = countries;
+    }
+
+    @Override
+    public void propertyChange(PropertyChangeEvent evt) {
+        if (evt.getPropertyName().equals("COLOR")) {
+            repaint();
         }
     }
 }
