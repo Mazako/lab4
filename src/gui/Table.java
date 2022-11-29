@@ -19,6 +19,7 @@ public class Table extends JScrollPane {
         tableModel = new TableModel(graph);
         jTable = new JTable(tableModel);
         this.setViewportView(jTable);
+        jTable.setFocusable(false);
         jTable.setFillsViewportHeight(true);
         jTable.setRowSelectionAllowed(true);
         setCorrectWidth(70, 70, 500);
@@ -32,6 +33,7 @@ public class Table extends JScrollPane {
     public Table(Graph graph, ArrayList<Country> countries, int width, int height) {
         tableModel = new TableModel(graph, countries);
         jTable = new JTable(tableModel);
+        jTable.setFocusable(false);
         this.setViewportView(jTable);
         jTable.setFillsViewportHeight(true);
         jTable.setRowSelectionAllowed(true);

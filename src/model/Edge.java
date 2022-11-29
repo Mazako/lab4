@@ -128,12 +128,11 @@ public class Edge implements Serializable {
         Edge edge = (Edge) o;
 
         if (!getFirstNode().equals(edge.getFirstNode()) && !getFirstNode().equals(edge.secondNode)) return false;
-        if (!getSecondNode().equals(edge.getSecondNode()) && !getSecondNode().equals(edge.getFirstNode())) return false;
-        return getTransport() == edge.getTransport();
+        return getSecondNode().equals(edge.getSecondNode()) || getSecondNode().equals(edge.getFirstNode());
     }
 
     @Override
     public int hashCode() {
-        return firstNode.hashCode() + secondNode.hashCode() + transport.hashCode();
+        return firstNode.hashCode() + secondNode.hashCode();
     }
 }

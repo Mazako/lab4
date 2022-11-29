@@ -1,9 +1,6 @@
 package gui;
 
-import model.Country;
-import model.Graph;
-import model.GraphException;
-import model.Node;
+import model.*;
 
 import javax.swing.*;
 import java.awt.*;
@@ -13,6 +10,29 @@ import java.io.File;
 import java.util.ArrayList;
 
 public class MainFrame extends JFrame implements ActionListener {
+
+    public static final String ABOUT = "Laboratorium 4\n" +
+                                        "Program do edycji grafów w postaci miast i połączeń między nimi\n" +
+                                        "Autor: Michał Maziarz, 263 913\n" +
+                                        "Data: Listopad 2022";
+    //Proszę mi wierzyć, że \t nie działo
+    public static final String INSTRUCTION = "Instrukcja obsługi:\n" +
+            "1. Poruszanie, zmiana rozmiarów\n" +
+            "       -LPM na planszy- poruszanie planszą\n" +
+            "       -LPM na grafie- poruszanie grafem\n" +
+            "       -LPM na grafie + ruch kółkiem myszy- zmiana rozmiaru grafu\n" +
+            "       -LPM na krawędzi- poruszanie krawedzi\n" +
+            "       -LPM na krawędzi + ruch kółkiem myszy- zmiana rozmiaru krawędzi\n" +
+            "       -Strzałki- ruch całym grafem\n" +
+            "       -Del (jeśli kursor wskazuje na graf/krawędź)- usuwanie\n" +
+            "2. Edycja:\n" +
+            "       -PPM na grafie- opcje edycji grafu\n" +
+            "       -PPM na krawędź- opcje edycji krawędzi\n" +
+            "       -PPM na nic: opcja dodawania wierzchołka\n" +
+            "3. BFS\n" +
+            "       -Program umożliwia wyszukiwanie najkrótszej drogi miedzy miastami za pomocą algorytmu przeszukiwania grafu wszerz.\n" +
+            "       Algorytm nie uwgzględnia realnych odległości, oraz typu transportu. Zakładamy że szuka\n" +
+            "       najkrótszej drogi w pojęciu najmniejszej Ilości miast do odwiedzenia.";
 
     JMenuBar menuBar = new JMenuBar();
     JMenu fileMenu = new JMenu("Plik");
@@ -36,10 +56,6 @@ public class MainFrame extends JFrame implements ActionListener {
     private final PaintFrame paintPanel;
     private ListPanel listPanel;
 
-    public static final String ABOUT = "Laboratorium 4\n" +
-                                        "Program do edycji grafów w postaci miast i połączeń między nimi\n" +
-                                        "Autor: Michał Maziarz, 263 913\n" +
-                                        "Data: Listopad 2022";
 
 
     public MainFrame() {
@@ -60,6 +76,7 @@ public class MainFrame extends JFrame implements ActionListener {
         this.add(paintPanel);
         this.add(listPanel);
         this.setVisible(true);
+        paintPanel.requestFocus();
     }
 
     private void initMenuBar() {
@@ -91,19 +108,51 @@ public class MainFrame extends JFrame implements ActionListener {
         graph = new Graph();
         Country poland = new Country("Polska", Color.RED);
         Country germany = new Country("Niemcy", Color.LIGHT_GRAY);
+        Country sweeden = new Country("Szwecja", Color.MAGENTA);
+        Country gB = new Country("Wielka Brytania", Color.yellow);
+        Country brazil = new Country("Brazylia", Color.GREEN);
+        Country chechia = new Country("Czechy", Color.PINK);
         Country undefined = new Country();
         countries.add(poland);
         countries.add(germany);
+        countries.add(sweeden);
+        countries.add(gB);
+        countries.add(brazil);
+        countries.add(chechia);
         countries.add(undefined);
-        Node node1 = new Node("Warszawa", poland, 100, 100, 30);
-        Node node2 = new Node("Wrocław", poland, 200, 100, 30);
-        Node node3 = new Node("Berlin", germany, 400, 500, 30);
+        Node node1 = new Node("Warszawa", poland, 634, 311, 30);
+        Node node2 = new Node("Wrocław", poland, 465, 417, 30);
+        Node node3 = new Node("Berlin", germany, 283, 306, 30);
+        Node monachium = new Node("Monachium", germany, 67, 321,30);
+        Node london = new Node("Londyn", gB, 58, 67,50);
+        Node saoPaolo = new Node("Sao Paolo", brazil, 87, 623,45);
+        Node prague = new Node("Praga", chechia, 545, 545,35);
+        Node bydgoszcz = new Node("Bydgoszcz", poland, 403, 206,30);
+        Node choroszcz = new Node("Choroszcz", undefined, 571, 95, 43);
+        Node stockholm = new Node("Sztokholm", sweeden, 359, 54, 31);
         graph.add(node1);
         graph.add(node2);
         graph.add(node3);
+        graph.add(monachium);
+        graph.add(london);
+        graph.add(saoPaolo);
+        graph.add(prague);
+        graph.add(bydgoszcz);
+        graph.add(choroszcz);
+        graph.add(stockholm);
         graph.addEdge(node1, node2);
         graph.addEdge(node1, node3);
         graph.addEdge(node2, node3);
+        graph.addEdge(stockholm, choroszcz, MeansOfTransport.PLANE);
+        graph.addEdge(stockholm, london, MeansOfTransport.SHIP);
+        graph.addEdge(london, monachium, MeansOfTransport.SHIP);
+        graph.addEdge(london, node3, MeansOfTransport.PLANE);
+        graph.addEdge(node3, stockholm, MeansOfTransport.SHIP);
+        graph.addEdge(stockholm, node1, MeansOfTransport.SHIP);
+        graph.addEdge(monachium, node3, MeansOfTransport.CAR);
+        graph.addEdge(monachium, saoPaolo, MeansOfTransport.PLANE);
+        graph.addEdge(monachium, prague, MeansOfTransport.CAR);
+        graph.addEdge(node2, prague, MeansOfTransport.TRAIN);
     }
 
     @Override
@@ -138,6 +187,12 @@ public class MainFrame extends JFrame implements ActionListener {
                 );
             } else if (source == BFSMenuItem) {
                 BFS();
+            } else if (source == helpMenuItem) {
+                JOptionPane.showMessageDialog(this,
+                        INSTRUCTION,
+                        "Instrukcja obsługi",
+                        JOptionPane.INFORMATION_MESSAGE
+                );
             }
         } catch (GraphException ex) {
             JOptionPane.showMessageDialog(this,ex.getMessage(), "BŁĄD", JOptionPane.ERROR_MESSAGE);

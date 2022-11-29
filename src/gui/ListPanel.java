@@ -36,6 +36,7 @@ public class ListPanel extends JPanel implements PropertyChangeListener, ActionL
         this.add(addCountryButton);
         this.add(removeCountryButton);
         this.add(changeColorButton);
+        this.setFocusable(false);
 
     }
 

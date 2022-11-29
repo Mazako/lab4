@@ -32,8 +32,10 @@ public class PaintFrame extends JPanel implements MouseMotionListener, MouseList
         this.addMouseListener(this);
         this.addMouseMotionListener(this);
         this.addKeyListener(this);
+        this.setFocusable(true);
         this.addMouseWheelListener(this);
         this.countries = countrySet;
+        this.requestFocus();
     }
 
 
@@ -64,7 +66,35 @@ public class PaintFrame extends JPanel implements MouseMotionListener, MouseList
 
     @Override
     public void keyPressed(KeyEvent e) {
+        int distance = e.isShiftDown() ? 20 : 10;
+        switch (e.getKeyCode()) {
+            case KeyEvent.VK_LEFT:
+                graph.getAllNodes().stream()
+                        .forEach(node -> node.move(-distance, 0));
+                break;
+            case KeyEvent.VK_RIGHT:
+                graph.getAllNodes().stream()
+                        .forEach(node -> node.move(distance, 0));
+                break;
+            case KeyEvent.VK_UP:
+                graph.getAllNodes().stream()
+                        .forEach(node -> node.move(0, -distance));
+                break;
+            case KeyEvent.VK_DOWN:
+                graph.getAllNodes().stream()
+                        .forEach(node -> node.move(0, distance));
+                break;
+            case KeyEvent.VK_DELETE:
+                if (nodeUnderCursor != null) {
+                    graph.remove(nodeUnderCursor);
+                    nodeUnderCursor = null;
+                } else if (edgeUnderCursor != null) {
+                    graph.removeEdge(edgeUnderCursor);
+                    edgeUnderCursor = null;
+                }
 
+        }
+        repaint();
     }
 
     @Override
@@ -113,10 +143,15 @@ public class PaintFrame extends JPanel implements MouseMotionListener, MouseList
     private void createPopupMenu(MouseEvent e, Edge edgeUnderCursor) {
             Edge currentEdge = edgeUnderCursor;
             JPopupMenu popupMenu = new JPopupMenu();
+            JMenuItem remove = new JMenuItem("Usuń");
             JMenuItem changeToCar = new JMenuItem("Transport samochodem");
             JMenuItem changeToTrain = new JMenuItem("Transport pociągiem");
             JMenuItem changeToPlane = new JMenuItem("Transport samolotem");
             JMenuItem changeToShip = new JMenuItem("Transport statkiem");
+            remove.addActionListener(action -> {
+                graph.removeEdge(currentEdge);
+                repaint();
+            });
             changeToCar.addActionListener(action -> {
                 currentEdge.setTransport(MeansOfTransport.CAR);
                 repaint();
@@ -133,6 +168,7 @@ public class PaintFrame extends JPanel implements MouseMotionListener, MouseList
                 currentEdge.setTransport(MeansOfTransport.SHIP);
                 repaint();
             });
+            popupMenu.add(remove);
             popupMenu.add(changeToCar);
             popupMenu.add(changeToTrain);
             popupMenu.add(changeToPlane);
@@ -142,7 +178,7 @@ public class PaintFrame extends JPanel implements MouseMotionListener, MouseList
 
     @Override
     public void mouseEntered(MouseEvent e) {
-
+        requestFocus();
     }
 
     @Override

@@ -58,6 +58,10 @@ public class Graph implements PropertyChangeListener, Serializable {
         support.firePropertyChange("nodeSize", nodes.size() + 1, nodes.size());
         edges.removeIf(next -> next.getFirstNode().equals(node) || next.getSecondNode().equals(node));
     }
+    public void removeEdge(Edge edge) {
+        edges.remove(edge);
+        support.firePropertyChange("edgeSize", edges.size() - 1, edges.size());
+    }
 
     public List<Node> getAllNodesConnectedTo(Node node) {
         if (!nodeExists(node)) {
@@ -80,11 +84,18 @@ public class Graph implements PropertyChangeListener, Serializable {
     }
 
     public void addEdge(Node firstNode, Node secondNode) {
+        addEdge(firstNode, secondNode, null);
+    }
+
+    public void addEdge(Node firstNode, Node secondNode, MeansOfTransport transport) {
         if (!nodeExists(firstNode) || !nodeExists(secondNode)) {
             throw new GraphException("Dane węzły nie znajdują się w grafie");
         }
+        if (transport == null) {
+            transport = MeansOfTransport.CAR;
+        }
         int oldSize = edges.size();
-        edges.add(new Edge(firstNode, secondNode));
+        edges.add(new Edge(firstNode, secondNode, transport));
         edges = new HashSet<>(edges);
         support.firePropertyChange("edgesSize", oldSize ,edges.size());
     }

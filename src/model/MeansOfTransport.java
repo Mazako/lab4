@@ -4,7 +4,7 @@ import java.awt.*;
 
 public enum MeansOfTransport {
     CAR("Samochód", Color.BLACK),
-    TRAIN("Pociąg", Color.GRAY),
+    TRAIN("Pociąg", Color.GREEN),
     SHIP("Statek", Color.BLUE),
     PLANE("Samolot", Color.CYAN);
 
