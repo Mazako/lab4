@@ -14,7 +14,8 @@ public class MainFrame extends JFrame implements ActionListener {
     public static final String ABOUT = "Laboratorium 4\n" +
                                         "Program do edycji grafów w postaci miast i połączeń między nimi\n" +
                                         "Autor: Michał Maziarz, 263 913\n" +
-                                        "Data: Listopad 2022";
+                                        "Data: Listopad 2022\n" +
+                                        "Wersja JDK: 11";
     //Proszę mi wierzyć, że \t nie działo
     public static final String INSTRUCTION = "Instrukcja obsługi:\n" +
             "1. Poruszanie, zmiana rozmiarów\n" +
