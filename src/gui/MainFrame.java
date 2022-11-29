@@ -21,7 +21,11 @@ public class MainFrame extends JFrame implements ActionListener {
         JMenuItem saveGraphMenuItem = new JMenuItem("Zapisz graf");
         JMenuItem exampleGraphMenuItem = new JMenuItem("Przykładowy graf");
         JMenuItem exitMenuItem = new JMenuItem("Wyjdź");
-
+    JMenu help = new JMenu("Pomoc");
+        JMenuItem aboutMenuItem = new JMenuItem("O autorze");
+        JMenuItem helpMenuItem = new JMenuItem("Pomoc");
+    JMenu graphMenu = new JMenu("Graf");
+        JMenuItem BFSMenuItem = new JMenuItem("Wyszukaj najkrótszą drogę");
 
     private Graph graph = new Graph();
 
@@ -32,6 +36,11 @@ public class MainFrame extends JFrame implements ActionListener {
     private final PaintFrame paintPanel;
     private ListPanel listPanel;
 
+    public static final String ABOUT = "Laboratorium 4\n" +
+                                        "Program do edycji grafów w postaci miast i połączeń między nimi\n" +
+                                        "Autor: Michał Maziarz, 263 913\n" +
+                                        "Data: Listopad 2022";
+
 
     public MainFrame() {
         createInitData();
@@ -39,6 +48,7 @@ public class MainFrame extends JFrame implements ActionListener {
         listPanel = new ListPanel(graph, countries);
         listPanel.addPropertyChangeListener(paintPanel);
         this.setDefaultCloseOperation(EXIT_ON_CLOSE);
+        this.setTitle("Mapa miast i połączeń");
         this.setResizable(false);
         this.setSize(WINDOW_WIDTH, WINDOW_HEIGHT);
         this.setLocationRelativeTo(null);
@@ -64,6 +74,16 @@ public class MainFrame extends JFrame implements ActionListener {
             fileMenu.add(item);
         }
         menuBar.add(fileMenu);
+
+        help.add(aboutMenuItem);
+        aboutMenuItem.addActionListener(this);
+        help.add(helpMenuItem);
+        helpMenuItem.addActionListener(this);
+
+        graphMenu.add(BFSMenuItem);
+        BFSMenuItem.addActionListener(this);
+        menuBar.add(graphMenu);
+        menuBar.add(help);
     }
 
     private void createInitData() {
@@ -110,10 +130,45 @@ public class MainFrame extends JFrame implements ActionListener {
                 openGraph();
             } else if (source == exitMenuItem) {
                 System.exit(0);
+            } else if (source == aboutMenuItem) {
+                JOptionPane.showMessageDialog(this,
+                        ABOUT,
+                        "O autorze",
+                        JOptionPane.INFORMATION_MESSAGE
+                );
+            } else if (source == BFSMenuItem) {
+                BFS();
             }
         } catch (GraphException ex) {
             JOptionPane.showMessageDialog(this,ex.getMessage(), "BŁĄD", JOptionPane.ERROR_MESSAGE);
         }
+    }
+
+    private void BFS() {
+        Node node = searchNode(graph, "Wybierz miasto początkowe");
+        Node searchNode = searchNode(graph, "Wybierz miasto docelowe");
+        if (node == null || searchNode == null) {
+            return;
+        }
+        Graph bfs = graph.BFS(node, searchNode);
+        JDialog dialog = new JDialog();
+        BFSView bfsView = new BFSView(bfs);
+        dialog.add(bfsView);
+        dialog.setSize(700, 750);
+        dialog.setTitle("BFS");
+        dialog.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+        dialog.setVisible(true);
+    }
+
+    private Node searchNode(Graph graph, String title) {
+        return (Node) JOptionPane.showInputDialog(this,
+                title,
+                "",
+                JOptionPane.INFORMATION_MESSAGE,
+                null,
+                graph.getAllNodes().toArray(),
+                graph.getAllNodes().get(0)
+        );
     }
 
     private void openGraph() {

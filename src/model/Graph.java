@@ -14,7 +14,7 @@ public class Graph implements PropertyChangeListener, Serializable {
     private static final long serialVersionUID = 1L;
     private PropertyChangeSupport support = new PropertyChangeSupport(this);
     private final List<Node> nodes = new ArrayList<>();
-    private final HashSet<Edge> edges = new HashSet<>();
+    private HashSet<Edge> edges = new HashSet<>();
 
     public static void saveGraphToFile(File file, Graph graph) {
         try (var oos = new ObjectOutputStream(new FileOutputStream(file))) {
@@ -83,8 +83,10 @@ public class Graph implements PropertyChangeListener, Serializable {
         if (!nodeExists(firstNode) || !nodeExists(secondNode)) {
             throw new GraphException("Dane węzły nie znajdują się w grafie");
         }
+        int oldSize = edges.size();
         edges.add(new Edge(firstNode, secondNode));
-        support.firePropertyChange("edgesSize", edges.size() - 1, edges.size());
+        edges = new HashSet<>(edges);
+        support.firePropertyChange("edgesSize", oldSize ,edges.size());
     }
 
     public Set<Edge> getAllEdges() {
@@ -115,5 +117,52 @@ public class Graph implements PropertyChangeListener, Serializable {
         Object oldValue = evt.getOldValue();
         Object newValue = evt.getNewValue();
         support.firePropertyChange("newName", oldValue, newValue);
+    }
+
+    public Graph BFS(Node startNode, Node searchedNode) {
+        if (!nodeExists(startNode) || !nodeExists(searchedNode)) {
+            throw new GraphException("Węzeł nie znajduje się w grafie");
+        }
+        Queue<Node> queue = new LinkedList<>();
+        List<Node> searched = new ArrayList<>();
+        queue.addAll(getAllNodesConnectedTo(startNode));
+        searched.add(startNode);;
+        HashMap<Node, Node> dependencyMap = new HashMap<>();
+        nodes.forEach(node -> dependencyMap.put(node, null));
+        getAllNodesConnectedTo(startNode).stream()
+                .forEach(n -> dependencyMap.put(n, startNode));
+        Node node = null;
+        while (!queue.isEmpty()) {
+            node = queue.poll();
+            if (!searched.contains(node)) {
+                searched.add(node);
+                List<Node> collect = getAllNodesConnectedTo(node).stream()
+                        .filter(n -> !searched.contains(n))
+                        .collect(Collectors.toList());
+                queue.addAll(collect);
+                for (Node n : collect) {
+                    if (dependencyMap.get(n) == null) {
+                        dependencyMap.put(n, node);
+                    }
+                }
+            }
+        }
+        if (dependencyMap.get(searchedNode) == null) {
+            throw new GraphException("Nie udało się wyszukać najkrótszej drogi");
+        }
+        Graph graph = new Graph();
+        node = searchedNode;
+        Node previous = null;
+        while (node != null) {
+            Node newNode = new Node(node);
+            graph.add(newNode);
+            if (previous != null) {
+                graph.addEdge(newNode, previous);
+            }
+            previous = newNode;
+            node = dependencyMap.get(node);
+        }
+
+        return graph;
     }
 }

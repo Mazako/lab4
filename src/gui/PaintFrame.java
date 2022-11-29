@@ -81,7 +81,7 @@ public class PaintFrame extends JPanel implements MouseMotionListener, MouseList
     public void mousePressed(MouseEvent e) {
         if (e.getButton() == 1)  {
             mouseButtonLeft = true;
-            if (insertingEdge && nodeUnderCursor != null) {
+            if (insertingEdge && nodeUnderCursor != null && nodeUnderCursor != insertingNode) {
                 graph.addEdge(nodeUnderCursor, insertingNode);
                 insertingEdge = false;
                 insertingNode = null;

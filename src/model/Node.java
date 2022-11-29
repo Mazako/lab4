@@ -28,6 +28,10 @@ public class Node implements Serializable {
         this.r = Math.min(MAX_RADIUS, this.r);
     }
 
+    public Node(Node node) {
+        this(node.name, node.country, node.x, node.y, node.r);
+    }
+
     public Node (int x, int y) {
         this("", new Country(), x, y, MIN_RADIUS);
     }
