@@ -1,3 +1,9 @@
+/*
+ *  Laboratorium 4
+ *
+ *   Autor: Michal Maziarz, 263913
+ *    Data: listopad 2022 r.
+ */
 package gui;
 
 import model.*;

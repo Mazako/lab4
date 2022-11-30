@@ -1,3 +1,0 @@
-# Co zrobić
-* Dokumentacja
-* Podpisy

@@ -2,6 +2,7 @@
 *.class
 .idea
 out
+/documentation
 
 # Log file
 *.log
